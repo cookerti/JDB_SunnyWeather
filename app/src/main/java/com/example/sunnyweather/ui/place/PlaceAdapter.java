@@ -15,6 +15,7 @@ import com.example.sunnyweather.R;
 import com.example.sunnyweather.SunnyWeatherApplication;
 import com.example.sunnyweather.logic.model.Place;
 import com.example.sunnyweather.ui.weather.WeatherActivity;
+import com.example.sunnyweather.ui.weather.WeatherModel;
 import com.example.sunnyweather.util.GlobalConstants;
 
 import java.util.List;
@@ -46,15 +47,26 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.MyViewHolder
             public void onClick(View v) {
                 Log.d("JDB","onclick");
                 int pos = holder.getCurPosition();
-                Intent intent = new Intent(SunnyWeatherApplication.mcontext, WeatherActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString(GlobalConstants.CURRENT_LAT,list.get(pos).getLocation().getLat());
-                bundle.putString(GlobalConstants.CURRENT_LON,list.get(pos).getLocation().getLng());
-                bundle.putString(GlobalConstants.CURRENT_PLACE_NAME,list.get(pos).getName());
-                intent.putExtras(bundle);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Place place = list.get(pos);
+                if(fragment.getActivity() instanceof WeatherActivity){
+                    ((WeatherActivity) fragment.getActivity()).drawerLayout.closeDrawers();
+                   WeatherModel viewModel = ((WeatherActivity) fragment.getActivity()).weatherModel;
+                   viewModel.setLocation(place.getLocation());
+                   viewModel.setPlaceName(place.getName());
+                    ((WeatherActivity) fragment.getActivity()).refreshWeather();
+                }
+                else{
+                    Intent intent = new Intent(SunnyWeatherApplication.mcontext, WeatherActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString(GlobalConstants.CURRENT_LAT,list.get(pos).getLocation().getLat());
+                    bundle.putString(GlobalConstants.CURRENT_LON,list.get(pos).getLocation().getLng());
+                    bundle.putString(GlobalConstants.CURRENT_PLACE_NAME,list.get(pos).getName());
+                    intent.putExtras(bundle);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    SunnyWeatherApplication.mcontext.startActivity(intent);
+                }
+                //不论是跳转还是更新城市，都需要保存
                 fragment.getViewModel().savePlace(list.get(pos));
-                SunnyWeatherApplication.mcontext.startActivity(intent);
             }
         });
 

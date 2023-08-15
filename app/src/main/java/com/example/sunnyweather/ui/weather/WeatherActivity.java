@@ -1,17 +1,26 @@
 package com.example.sunnyweather.ui.weather;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Layout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -31,7 +40,7 @@ import java.util.Locale;
 
 public class WeatherActivity extends AppCompatActivity {
 
-    private WeatherModel weatherModel;
+    public WeatherModel weatherModel;
     private TextView tv_placeName;
     private TextView tv_currentTemp;
     private TextView tv_currentSky;
@@ -43,12 +52,15 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView tv_ultraviolet;
     private TextView tv_carWashing;
     private ScrollView weatherLayout;
+    private SwipeRefreshLayout swipeRefresh;
+    private Button navbtn;
+    public DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
-
+        initView();
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -74,14 +86,25 @@ public class WeatherActivity extends AppCompatActivity {
                 else{
                     ToastUtil.Show("该地区天气情况无法获取！");
                 }
+                swipeRefresh.setRefreshing(false);//天气情况更新后，刷新状态结束
+            }
+        });
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                //地点不变的刷新
+                refreshWeather();
             }
         });
 
-
+    }
+    public void refreshWeather(){
+        weatherModel.refreshWeather();
+        swipeRefresh.setRefreshing(true);
     }
 
     private void showWeatherInfo(Weather weather) {
-        initView();
         RealtimeResponse.Realtime realtime = weather.getRealtime();
         DailyResponse.Daily daily = weather.getDaily();
         //填充now.xml数据
@@ -130,6 +153,9 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navbtn = findViewById(R.id.navBtn);
+        swipeRefresh = findViewById(R.id.swipeRefresh);
         tv_placeName = findViewById(R.id.placeName);
         tv_currentTemp = findViewById(R.id.currentTemp);
         tv_currentSky = findViewById(R.id.currentSky);
@@ -142,5 +168,34 @@ public class WeatherActivity extends AppCompatActivity {
         tv_carWashing = findViewById(R.id.carWashingText);
         weatherLayout = findViewById(R.id.weatherLayout);
         Sky.InitSkyMap();
+
+        navbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                 InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                 inputMethodManager.hideSoftInputFromWindow(drawerLayout.getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
     }
 }

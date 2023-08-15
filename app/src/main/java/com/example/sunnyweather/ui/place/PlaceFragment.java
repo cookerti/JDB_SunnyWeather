@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.sunnyweather.MainActivity;
 import com.example.sunnyweather.R;
 import com.example.sunnyweather.SunnyWeatherApplication;
 import com.example.sunnyweather.logic.model.Place;
@@ -53,7 +54,7 @@ public class PlaceFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         viewModel = new ViewModelProvider(this).get(PlaceViewModel.class);
-        if(viewModel.isPlacesaved()){
+        if(getActivity()  instanceof MainActivity && viewModel.isPlacesaved()){
             Place place = viewModel.getSavedPlace();
             Intent intent = new Intent(getContext(), WeatherActivity.class);
             Bundle bundle = new Bundle();
