@@ -1,5 +1,6 @@
 package com.example.sunnyweather.ui.place;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,7 +17,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -24,19 +24,18 @@ import android.widget.Toast;
 import com.example.sunnyweather.R;
 import com.example.sunnyweather.SunnyWeatherApplication;
 import com.example.sunnyweather.logic.model.Place;
+import com.example.sunnyweather.ui.weather.WeatherActivity;
+import com.example.sunnyweather.util.GlobalConstants;
 
 import java.util.List;
 
 
 public class PlaceFragment extends Fragment {
 
+    public PlaceViewModel getViewModel() {
+        return viewModel;
+    }
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private PlaceViewModel viewModel;
 
     public PlaceFragment() {
@@ -45,8 +44,6 @@ public class PlaceFragment extends Fragment {
     public static PlaceFragment newInstance(String param1, String param2) {
         PlaceFragment fragment = new PlaceFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,11 +51,20 @@ public class PlaceFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
         viewModel = new ViewModelProvider(this).get(PlaceViewModel.class);
+        if(viewModel.isPlacesaved()){
+            Place place = viewModel.getSavedPlace();
+            Intent intent = new Intent(getContext(), WeatherActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString(GlobalConstants.CURRENT_LAT,place.getLocation().getLat());
+            bundle.putString(GlobalConstants.CURRENT_LON,place.getLocation().getLng());
+            bundle.putString(GlobalConstants.CURRENT_PLACE_NAME,place.getName());
+            intent.putExtras(bundle);
+            startActivity(intent);
+            if(getActivity() != null)
+                getActivity().finish();
+        }
     }
 
     @Override
@@ -73,7 +79,7 @@ public class PlaceFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ImageView iv_bg = view.findViewById(R.id.bgimageView);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(SunnyWeatherApplication.mcontext,LinearLayoutManager.VERTICAL,false);
-        PlaceAdapter adapter = new PlaceAdapter(viewModel.placeList);
+        PlaceAdapter adapter = new PlaceAdapter(viewModel.placeList,this);
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);

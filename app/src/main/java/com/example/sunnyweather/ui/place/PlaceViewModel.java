@@ -33,4 +33,13 @@ public class PlaceViewModel extends ViewModel {
         return listMutableLiveData;
     }
 
+    public boolean isPlacesaved(){
+        return Repository.isPlaceSaved();
+    }
+    public void savePlace(Place place){
+        Repository.savePlace(place);
+    }
+    public Place getSavedPlace(){
+       return Repository.getSavedplace();
+    }
 }

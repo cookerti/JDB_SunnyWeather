@@ -4,6 +4,15 @@ public class Location {
     private String lng;
     private String lat;
 
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "lng='" + lng + '\'' +
+                ", lat='" + lat + '\'' +
+                '}';
+    }
+
     public Location() {
     }
 
